@@ -19,6 +19,20 @@ namespace ops {
 // * a Node* (to pass the first output of that node).
 
 
+// Delete the tensor specified by its handle in the session.
+//
+// Arguments:
+// * handle: The handle for a tensor stored in the session state.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node.
+Node* DeleteSessionTensor(NodeOut handle, const GraphDefBuilder::Options&
+                          opts);
+
 // Partitions `data` into `num_partitions` tensors using indices from `partitions`.
 //
 // For each index tuple `js` of size `partitions.ndim`, the slice `data[js, ...]`
@@ -145,6 +159,36 @@ Node* DynamicStitch(gtl::ArraySlice<NodeOut> indices, gtl::ArraySlice<NodeOut>
 // The handle to the queue.
 Node* FIFOQueue(DataTypeSlice component_types, const GraphDefBuilder::Options&
                 opts);
+
+// Store the input tensor in the state of the current session.
+//
+// Arguments:
+// * value: The tensor to be stored.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// The handle for the tensor stored in the session state.
+Node* GetSessionHandle(NodeOut value, const GraphDefBuilder::Options& opts);
+
+// Get the value of the tensor specified by its handle.
+//
+// Arguments:
+// * handle: The handle for a tensor stored in the session state.
+// * dtype: The type of the output value.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// The tensor for the given handle.
+Node* GetSessionTensor(NodeOut handle, DataType dtype, const
+                       GraphDefBuilder::Options& opts);
 
 // Creates a non-initialized hash table.
 //
@@ -314,6 +358,9 @@ Node* QueueDequeue(NodeOut handle, DataTypeSlice component_types, const
 
 // Dequeues n tuples of one or more tensors from the given queue.
 //
+// If the queue is closed and there are fewer than n elements, then an
+// OutOfRange error is returned.
+//
 // This operation concatenates queue-element component tensors along the
 // 0th dimension to make a single component tensor.  All of the components
 // in the dequeued tuple will have size n in the 0th dimension.
@@ -342,6 +389,45 @@ Node* QueueDequeue(NodeOut handle, DataTypeSlice component_types, const
 // Returns a pointer to the created Node, with output:
 // One or more tensors that were dequeued as a tuple.
 Node* QueueDequeueMany(NodeOut handle, NodeOut n, DataTypeSlice
+                       component_types, const GraphDefBuilder::Options& opts);
+
+// Dequeues n tuples of one or more tensors from the given queue.
+//
+// This operation is not supported by all queues.  If a queue does not support
+// DequeueUpTo, then an Unimplemented error is returned.
+//
+// If the queue is closed and there are more than 0 but less than n elements
+// remaining, then instead of returning an OutOfRange error like
+// QueueDequeueMany, the remaining elements are returned immediately.  If the queue
+// is closed and there are 0 elements left in the queue, then an OutOfRange
+// error is returned just like in QueueDequeueMany.  Otherwise the behavior
+// is identical to QueueDequeueMany:
+//
+// This operation concatenates queue-element component tensors along the
+// 0th dimension to make a single component tensor.  All of the components
+// in the dequeued tuple will have size n in the 0th dimension.
+//
+// This operation has k outputs, where k is the number of components in
+// the tuples stored in the given queue, and output i is the ith
+// component of the dequeued tuple.
+//
+// Arguments:
+// * handle: The handle to a queue.
+// * n: The number of tuples to dequeue.
+// * component_types: The type of each component in a tuple.
+// * opts:
+//   .WithAttr("timeout_ms", int64): Defaults to -1.
+//     If the queue has fewer than n elements, this operation
+// will block for up to timeout_ms milliseconds.
+// Note: This option is not supported yet.
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// One or more tensors that were dequeued as a tuple.
+Node* QueueDequeueUpTo(NodeOut handle, NodeOut n, DataTypeSlice
                        component_types, const GraphDefBuilder::Options& opts);
 
 // Enqueues a tuple of one or more tensors in the given queue.
@@ -503,6 +589,8 @@ Node* StackPop(NodeOut handle, DataType elem_type, const
 // * handle: The handle to a stack.
 // * elem: The tensor to be pushed onto the stack.
 // * opts:
+//   .WithAttr("swap_memory", bool): Defaults to false.
+//     Swap `elem` to CPU. Default to false.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -524,6 +612,10 @@ Node* StackPush(NodeOut handle, NodeOut elem, const GraphDefBuilder::Options&
 //   .WithAttr("dynamic_size", bool): Defaults to false.
 //     A boolean that determines whether writes to the TensorArray
 // are allowed to grow the size.  By default, this is not allowed.
+//   .WithAttr("clear_after_read", bool): Defaults to true.
+//     If true (default), Tensors in the TensorArray are cleared
+// after being read.  This disables multiple read semantics but allows early
+// release of memory.
 //   .WithAttr("tensor_array_name", StringPiece): Defaults to "".
 //     Overrides the name used for the temporary tensor_array
 // resource. Default value is the name of the 'TensorArray' op (which
@@ -553,12 +645,17 @@ Node* TensorArray(NodeOut size, DataType dtype, const GraphDefBuilder::Options&
 // Returns a pointer to the created Node.
 Node* TensorArrayClose(NodeOut handle, const GraphDefBuilder::Options& opts);
 
-// Concat the elements from the TensorArray.
+// Concat the elements from the TensorArray into value `value`.
 //
-// Takes T elements of shapes (n0 x d0 x d1 x ...), (n1 x d0 x d1 x ...),
-//   ..., (n(T-1) x d0 x d1 x ...)
+// Takes `T` elements of shapes
+//
+//   ```
+//   (n0 x d0 x d1 x ...), (n1 x d0 x d1 x ...), ..., (n(T-1) x d0 x d1 x ...)
+//   ```
+//
 // and concatenates them into a Tensor of shape:
-//   (n0 + n1 + ... + n(T-1) x d0 x d1 x ...).
+//
+//   ```(n0 + n1 + ... + n(T-1) x d0 x d1 x ...)```
 //
 // All elements must have the same shape (excepting the first dimension).
 //
@@ -577,7 +674,7 @@ Node* TensorArrayClose(NodeOut handle, const GraphDefBuilder::Options& opts);
 // axis.
 // * lengths: A vector of the row sizes of the original T elements in the
 // value output.  In the example above, this would be the values:
-// (n1, n2, ..., n(T-1))
+// `(n1, n2, ..., n(T-1))`.
 Node* TensorArrayConcat(NodeOut handle, NodeOut flow_in, DataType dtype, const
                         GraphDefBuilder::Options& opts);
 
@@ -611,7 +708,7 @@ Node* TensorArrayConcat(NodeOut handle, NodeOut flow_in, DataType dtype, const
 Node* TensorArrayGrad(NodeOut handle, NodeOut flow_in, StringPiece source,
                       const GraphDefBuilder::Options& opts);
 
-// Pack the elements from the TensorArray.
+// Pack the elements from the TensorArray into output `value`.
 //
 // All elements must have the same shape.
 //
@@ -631,7 +728,7 @@ Node* TensorArrayGrad(NodeOut handle, NodeOut flow_in, StringPiece source,
 Node* TensorArrayPack(NodeOut handle, NodeOut flow_in, DataType dtype, const
                       GraphDefBuilder::Options& opts);
 
-// Read an element from the TensorArray.
+// Read an element from the TensorArray into output `value`.
 //
 // Arguments:
 // * handle: The handle to a TensorArray.
@@ -667,15 +764,22 @@ Node* TensorArraySize(NodeOut handle, NodeOut flow_in, const
 // Split the data from the input value into TensorArray elements.
 //
 // Assuming that `lengths` takes on values
-//   (n0, n1, ..., n(T-1))
+//
+//   ```(n0, n1, ..., n(T-1))```
+//
 // and that `value` has shape
-//   (n0 + n1 + ... + n(T-1) x d0 x d1 x ...),
+//
+//   ```(n0 + n1 + ... + n(T-1) x d0 x d1 x ...)```,
+//
 // this splits values into a TensorArray with T tensors.
 //
 // TensorArray index t will be the subtensor of values with starting position
-//   (n0 + n1 + ... + n(t-1), 0, 0, ...)
+//
+//   ```(n0 + n1 + ... + n(t-1), 0, 0, ...)```
+//
 // and having size
-//   nt x d0 x d1 x ...
+//
+//   ```nt x d0 x d1 x ...```
 //
 // Arguments:
 // * handle: The handle to a TensorArray.

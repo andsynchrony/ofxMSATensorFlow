@@ -136,6 +136,21 @@ Node* CountUpTo(NodeOut ref, int64 limit, const GraphDefBuilder::Options&
 Node* DestroyTemporaryVariable(NodeOut ref, StringPiece var_name, const
                                GraphDefBuilder::Options& opts);
 
+// Checks whether a tensor has been initialized.
+//
+// Outputs boolean scalar indicating whether the tensor has been initialized.
+//
+// Arguments:
+// * ref: Should be from a `Variable` node. May be uninitialized.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node.
+Node* IsVariableInitialized(NodeOut ref, const GraphDefBuilder::Options& opts);
+
 // Adds sparse updates to a variable reference.
 //
 // This operation computes

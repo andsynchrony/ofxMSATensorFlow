@@ -41,6 +41,7 @@ void protobuf_ShutdownFile_tensorflow_2fcore_2futil_2fevent_2eproto();
 class Event;
 class LogMessage;
 class SessionLog;
+class TaggedRunMetadata;
 
 enum LogMessage_Level {
   LogMessage_Level_UNKNOWN = 0,
@@ -113,6 +114,7 @@ class Event : public ::google::protobuf::Message {
     kSummary = 5,
     kLogMessage = 6,
     kSessionLog = 7,
+    kTaggedRunMetadata = 8,
     WHAT_NOT_SET = 0,
   };
 
@@ -224,6 +226,15 @@ class Event : public ::google::protobuf::Message {
   ::tensorflow::SessionLog* release_session_log();
   void set_allocated_session_log(::tensorflow::SessionLog* session_log);
 
+  // optional .tensorflow.TaggedRunMetadata tagged_run_metadata = 8;
+  bool has_tagged_run_metadata() const;
+  void clear_tagged_run_metadata();
+  static const int kTaggedRunMetadataFieldNumber = 8;
+  const ::tensorflow::TaggedRunMetadata& tagged_run_metadata() const;
+  ::tensorflow::TaggedRunMetadata* mutable_tagged_run_metadata();
+  ::tensorflow::TaggedRunMetadata* release_tagged_run_metadata();
+  void set_allocated_tagged_run_metadata(::tensorflow::TaggedRunMetadata* tagged_run_metadata);
+
   WhatCase what_case() const;
   // @@protoc_insertion_point(class_scope:tensorflow.Event)
  private:
@@ -232,6 +243,7 @@ class Event : public ::google::protobuf::Message {
   inline void set_has_summary();
   inline void set_has_log_message();
   inline void set_has_session_log();
+  inline void set_has_tagged_run_metadata();
 
   inline bool has_what() const;
   void clear_what();
@@ -248,6 +260,7 @@ class Event : public ::google::protobuf::Message {
     ::tensorflow::Summary* summary_;
     ::tensorflow::LogMessage* log_message_;
     ::tensorflow::SessionLog* session_log_;
+    ::tensorflow::TaggedRunMetadata* tagged_run_metadata_;
   } what_;
   mutable int _cached_size_;
   ::google::protobuf::uint32 _oneof_case_[1];
@@ -504,6 +517,101 @@ class SessionLog : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static SessionLog* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class TaggedRunMetadata : public ::google::protobuf::Message {
+ public:
+  TaggedRunMetadata();
+  virtual ~TaggedRunMetadata();
+
+  TaggedRunMetadata(const TaggedRunMetadata& from);
+
+  inline TaggedRunMetadata& operator=(const TaggedRunMetadata& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const TaggedRunMetadata& default_instance();
+
+  void Swap(TaggedRunMetadata* other);
+
+  // implements Message ----------------------------------------------
+
+  inline TaggedRunMetadata* New() const { return New(NULL); }
+
+  TaggedRunMetadata* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const TaggedRunMetadata& from);
+  void MergeFrom(const TaggedRunMetadata& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(TaggedRunMetadata* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string tag = 1;
+  void clear_tag();
+  static const int kTagFieldNumber = 1;
+  const ::std::string& tag() const;
+  void set_tag(const ::std::string& value);
+  void set_tag(const char* value);
+  void set_tag(const char* value, size_t size);
+  ::std::string* mutable_tag();
+  ::std::string* release_tag();
+  void set_allocated_tag(::std::string* tag);
+
+  // optional bytes run_metadata = 2;
+  void clear_run_metadata();
+  static const int kRunMetadataFieldNumber = 2;
+  const ::std::string& run_metadata() const;
+  void set_run_metadata(const ::std::string& value);
+  void set_run_metadata(const char* value);
+  void set_run_metadata(const void* value, size_t size);
+  ::std::string* mutable_run_metadata();
+  ::std::string* release_run_metadata();
+  void set_allocated_run_metadata(::std::string* run_metadata);
+
+  // @@protoc_insertion_point(class_scope:tensorflow.TaggedRunMetadata)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool _is_default_instance_;
+  ::google::protobuf::internal::ArenaStringPtr tag_;
+  ::google::protobuf::internal::ArenaStringPtr run_metadata_;
+  mutable int _cached_size_;
+  friend void  protobuf_AddDesc_tensorflow_2fcore_2futil_2fevent_2eproto();
+  friend void protobuf_AssignDesc_tensorflow_2fcore_2futil_2fevent_2eproto();
+  friend void protobuf_ShutdownFile_tensorflow_2fcore_2futil_2fevent_2eproto();
+
+  void InitAsDefaultInstance();
+  static TaggedRunMetadata* default_instance_;
 };
 // ===================================================================
 
@@ -842,6 +950,53 @@ inline void Event::set_allocated_session_log(::tensorflow::SessionLog* session_l
   // @@protoc_insertion_point(field_set_allocated:tensorflow.Event.session_log)
 }
 
+// optional .tensorflow.TaggedRunMetadata tagged_run_metadata = 8;
+inline bool Event::has_tagged_run_metadata() const {
+  return what_case() == kTaggedRunMetadata;
+}
+inline void Event::set_has_tagged_run_metadata() {
+  _oneof_case_[0] = kTaggedRunMetadata;
+}
+inline void Event::clear_tagged_run_metadata() {
+  if (has_tagged_run_metadata()) {
+    delete what_.tagged_run_metadata_;
+    clear_has_what();
+  }
+}
+inline  const ::tensorflow::TaggedRunMetadata& Event::tagged_run_metadata() const {
+  // @@protoc_insertion_point(field_get:tensorflow.Event.tagged_run_metadata)
+  return has_tagged_run_metadata()
+      ? *what_.tagged_run_metadata_
+      : ::tensorflow::TaggedRunMetadata::default_instance();
+}
+inline ::tensorflow::TaggedRunMetadata* Event::mutable_tagged_run_metadata() {
+  if (!has_tagged_run_metadata()) {
+    clear_what();
+    set_has_tagged_run_metadata();
+    what_.tagged_run_metadata_ = new ::tensorflow::TaggedRunMetadata;
+  }
+  // @@protoc_insertion_point(field_mutable:tensorflow.Event.tagged_run_metadata)
+  return what_.tagged_run_metadata_;
+}
+inline ::tensorflow::TaggedRunMetadata* Event::release_tagged_run_metadata() {
+  if (has_tagged_run_metadata()) {
+    clear_has_what();
+    ::tensorflow::TaggedRunMetadata* temp = what_.tagged_run_metadata_;
+    what_.tagged_run_metadata_ = NULL;
+    return temp;
+  } else {
+    return NULL;
+  }
+}
+inline void Event::set_allocated_tagged_run_metadata(::tensorflow::TaggedRunMetadata* tagged_run_metadata) {
+  clear_what();
+  if (tagged_run_metadata) {
+    set_has_tagged_run_metadata();
+    what_.tagged_run_metadata_ = tagged_run_metadata;
+  }
+  // @@protoc_insertion_point(field_set_allocated:tensorflow.Event.tagged_run_metadata)
+}
+
 inline bool Event::has_what() const {
   return what_case() != WHAT_NOT_SET;
 }
@@ -1016,7 +1171,99 @@ inline void SessionLog::set_allocated_msg(::std::string* msg) {
   // @@protoc_insertion_point(field_set_allocated:tensorflow.SessionLog.msg)
 }
 
+// -------------------------------------------------------------------
+
+// TaggedRunMetadata
+
+// optional string tag = 1;
+inline void TaggedRunMetadata::clear_tag() {
+  tag_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& TaggedRunMetadata::tag() const {
+  // @@protoc_insertion_point(field_get:tensorflow.TaggedRunMetadata.tag)
+  return tag_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void TaggedRunMetadata::set_tag(const ::std::string& value) {
+  
+  tag_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:tensorflow.TaggedRunMetadata.tag)
+}
+inline void TaggedRunMetadata::set_tag(const char* value) {
+  
+  tag_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:tensorflow.TaggedRunMetadata.tag)
+}
+inline void TaggedRunMetadata::set_tag(const char* value, size_t size) {
+  
+  tag_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:tensorflow.TaggedRunMetadata.tag)
+}
+inline ::std::string* TaggedRunMetadata::mutable_tag() {
+  
+  // @@protoc_insertion_point(field_mutable:tensorflow.TaggedRunMetadata.tag)
+  return tag_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* TaggedRunMetadata::release_tag() {
+  
+  return tag_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void TaggedRunMetadata::set_allocated_tag(::std::string* tag) {
+  if (tag != NULL) {
+    
+  } else {
+    
+  }
+  tag_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), tag);
+  // @@protoc_insertion_point(field_set_allocated:tensorflow.TaggedRunMetadata.tag)
+}
+
+// optional bytes run_metadata = 2;
+inline void TaggedRunMetadata::clear_run_metadata() {
+  run_metadata_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& TaggedRunMetadata::run_metadata() const {
+  // @@protoc_insertion_point(field_get:tensorflow.TaggedRunMetadata.run_metadata)
+  return run_metadata_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void TaggedRunMetadata::set_run_metadata(const ::std::string& value) {
+  
+  run_metadata_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:tensorflow.TaggedRunMetadata.run_metadata)
+}
+inline void TaggedRunMetadata::set_run_metadata(const char* value) {
+  
+  run_metadata_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:tensorflow.TaggedRunMetadata.run_metadata)
+}
+inline void TaggedRunMetadata::set_run_metadata(const void* value, size_t size) {
+  
+  run_metadata_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:tensorflow.TaggedRunMetadata.run_metadata)
+}
+inline ::std::string* TaggedRunMetadata::mutable_run_metadata() {
+  
+  // @@protoc_insertion_point(field_mutable:tensorflow.TaggedRunMetadata.run_metadata)
+  return run_metadata_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* TaggedRunMetadata::release_run_metadata() {
+  
+  return run_metadata_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void TaggedRunMetadata::set_allocated_run_metadata(::std::string* run_metadata) {
+  if (run_metadata != NULL) {
+    
+  } else {
+    
+  }
+  run_metadata_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), run_metadata);
+  // @@protoc_insertion_point(field_set_allocated:tensorflow.TaggedRunMetadata.run_metadata)
+}
+
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

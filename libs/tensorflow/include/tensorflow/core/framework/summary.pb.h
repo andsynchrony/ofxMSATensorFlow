@@ -38,6 +38,7 @@ void protobuf_ShutdownFile_tensorflow_2fcore_2fframework_2fsummary_2eproto();
 
 class HistogramProto;
 class Summary;
+class Summary_Audio;
 class Summary_Image;
 class Summary_Value;
 
@@ -281,6 +282,122 @@ class Summary_Image : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
+class Summary_Audio : public ::google::protobuf::Message {
+ public:
+  Summary_Audio();
+  virtual ~Summary_Audio();
+
+  Summary_Audio(const Summary_Audio& from);
+
+  inline Summary_Audio& operator=(const Summary_Audio& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const Summary_Audio& default_instance();
+
+  void Swap(Summary_Audio* other);
+
+  // implements Message ----------------------------------------------
+
+  inline Summary_Audio* New() const { return New(NULL); }
+
+  Summary_Audio* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const Summary_Audio& from);
+  void MergeFrom(const Summary_Audio& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(Summary_Audio* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional float sample_rate = 1;
+  void clear_sample_rate();
+  static const int kSampleRateFieldNumber = 1;
+  float sample_rate() const;
+  void set_sample_rate(float value);
+
+  // optional int64 num_channels = 2;
+  void clear_num_channels();
+  static const int kNumChannelsFieldNumber = 2;
+  ::google::protobuf::int64 num_channels() const;
+  void set_num_channels(::google::protobuf::int64 value);
+
+  // optional int64 length_frames = 3;
+  void clear_length_frames();
+  static const int kLengthFramesFieldNumber = 3;
+  ::google::protobuf::int64 length_frames() const;
+  void set_length_frames(::google::protobuf::int64 value);
+
+  // optional bytes encoded_audio_string = 4;
+  void clear_encoded_audio_string();
+  static const int kEncodedAudioStringFieldNumber = 4;
+  const ::std::string& encoded_audio_string() const;
+  void set_encoded_audio_string(const ::std::string& value);
+  void set_encoded_audio_string(const char* value);
+  void set_encoded_audio_string(const void* value, size_t size);
+  ::std::string* mutable_encoded_audio_string();
+  ::std::string* release_encoded_audio_string();
+  void set_allocated_encoded_audio_string(::std::string* encoded_audio_string);
+
+  // optional string content_type = 5;
+  void clear_content_type();
+  static const int kContentTypeFieldNumber = 5;
+  const ::std::string& content_type() const;
+  void set_content_type(const ::std::string& value);
+  void set_content_type(const char* value);
+  void set_content_type(const char* value, size_t size);
+  ::std::string* mutable_content_type();
+  ::std::string* release_content_type();
+  void set_allocated_content_type(::std::string* content_type);
+
+  // @@protoc_insertion_point(class_scope:tensorflow.Summary.Audio)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool _is_default_instance_;
+  ::google::protobuf::int64 num_channels_;
+  ::google::protobuf::int64 length_frames_;
+  ::google::protobuf::internal::ArenaStringPtr encoded_audio_string_;
+  ::google::protobuf::internal::ArenaStringPtr content_type_;
+  float sample_rate_;
+  mutable int _cached_size_;
+  friend void  protobuf_AddDesc_tensorflow_2fcore_2fframework_2fsummary_2eproto();
+  friend void protobuf_AssignDesc_tensorflow_2fcore_2fframework_2fsummary_2eproto();
+  friend void protobuf_ShutdownFile_tensorflow_2fcore_2fframework_2fsummary_2eproto();
+
+  void InitAsDefaultInstance();
+  static Summary_Audio* default_instance_;
+};
+// -------------------------------------------------------------------
+
 class Summary_Value : public ::google::protobuf::Message {
  public:
   Summary_Value();
@@ -301,6 +418,7 @@ class Summary_Value : public ::google::protobuf::Message {
     kObsoleteOldStyleHistogram = 3,
     kImage = 4,
     kHisto = 5,
+    kAudio = 6,
     VALUE_NOT_SET = 0,
   };
 
@@ -397,6 +515,15 @@ class Summary_Value : public ::google::protobuf::Message {
   ::tensorflow::HistogramProto* release_histo();
   void set_allocated_histo(::tensorflow::HistogramProto* histo);
 
+  // optional .tensorflow.Summary.Audio audio = 6;
+  bool has_audio() const;
+  void clear_audio();
+  static const int kAudioFieldNumber = 6;
+  const ::tensorflow::Summary_Audio& audio() const;
+  ::tensorflow::Summary_Audio* mutable_audio();
+  ::tensorflow::Summary_Audio* release_audio();
+  void set_allocated_audio(::tensorflow::Summary_Audio* audio);
+
   ValueCase value_case() const;
   // @@protoc_insertion_point(class_scope:tensorflow.Summary.Value)
  private:
@@ -404,6 +531,7 @@ class Summary_Value : public ::google::protobuf::Message {
   inline void set_has_obsolete_old_style_histogram();
   inline void set_has_image();
   inline void set_has_histo();
+  inline void set_has_audio();
 
   inline bool has_value() const;
   void clear_value();
@@ -418,6 +546,7 @@ class Summary_Value : public ::google::protobuf::Message {
     ::google::protobuf::internal::ArenaStringPtr obsolete_old_style_histogram_;
     ::tensorflow::Summary_Image* image_;
     ::tensorflow::HistogramProto* histo_;
+    ::tensorflow::Summary_Audio* audio_;
   } value_;
   mutable int _cached_size_;
   ::google::protobuf::uint32 _oneof_case_[1];
@@ -486,6 +615,7 @@ class Summary : public ::google::protobuf::Message {
   // nested types ----------------------------------------------------
 
   typedef Summary_Image Image;
+  typedef Summary_Audio Audio;
   typedef Summary_Value Value;
 
   // accessors -------------------------------------------------------
@@ -745,6 +875,138 @@ inline void Summary_Image::set_allocated_encoded_image_string(::std::string* enc
 
 // -------------------------------------------------------------------
 
+// Summary_Audio
+
+// optional float sample_rate = 1;
+inline void Summary_Audio::clear_sample_rate() {
+  sample_rate_ = 0;
+}
+inline float Summary_Audio::sample_rate() const {
+  // @@protoc_insertion_point(field_get:tensorflow.Summary.Audio.sample_rate)
+  return sample_rate_;
+}
+inline void Summary_Audio::set_sample_rate(float value) {
+  
+  sample_rate_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.Summary.Audio.sample_rate)
+}
+
+// optional int64 num_channels = 2;
+inline void Summary_Audio::clear_num_channels() {
+  num_channels_ = GOOGLE_LONGLONG(0);
+}
+inline ::google::protobuf::int64 Summary_Audio::num_channels() const {
+  // @@protoc_insertion_point(field_get:tensorflow.Summary.Audio.num_channels)
+  return num_channels_;
+}
+inline void Summary_Audio::set_num_channels(::google::protobuf::int64 value) {
+  
+  num_channels_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.Summary.Audio.num_channels)
+}
+
+// optional int64 length_frames = 3;
+inline void Summary_Audio::clear_length_frames() {
+  length_frames_ = GOOGLE_LONGLONG(0);
+}
+inline ::google::protobuf::int64 Summary_Audio::length_frames() const {
+  // @@protoc_insertion_point(field_get:tensorflow.Summary.Audio.length_frames)
+  return length_frames_;
+}
+inline void Summary_Audio::set_length_frames(::google::protobuf::int64 value) {
+  
+  length_frames_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.Summary.Audio.length_frames)
+}
+
+// optional bytes encoded_audio_string = 4;
+inline void Summary_Audio::clear_encoded_audio_string() {
+  encoded_audio_string_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& Summary_Audio::encoded_audio_string() const {
+  // @@protoc_insertion_point(field_get:tensorflow.Summary.Audio.encoded_audio_string)
+  return encoded_audio_string_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void Summary_Audio::set_encoded_audio_string(const ::std::string& value) {
+  
+  encoded_audio_string_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:tensorflow.Summary.Audio.encoded_audio_string)
+}
+inline void Summary_Audio::set_encoded_audio_string(const char* value) {
+  
+  encoded_audio_string_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:tensorflow.Summary.Audio.encoded_audio_string)
+}
+inline void Summary_Audio::set_encoded_audio_string(const void* value, size_t size) {
+  
+  encoded_audio_string_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:tensorflow.Summary.Audio.encoded_audio_string)
+}
+inline ::std::string* Summary_Audio::mutable_encoded_audio_string() {
+  
+  // @@protoc_insertion_point(field_mutable:tensorflow.Summary.Audio.encoded_audio_string)
+  return encoded_audio_string_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* Summary_Audio::release_encoded_audio_string() {
+  
+  return encoded_audio_string_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void Summary_Audio::set_allocated_encoded_audio_string(::std::string* encoded_audio_string) {
+  if (encoded_audio_string != NULL) {
+    
+  } else {
+    
+  }
+  encoded_audio_string_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), encoded_audio_string);
+  // @@protoc_insertion_point(field_set_allocated:tensorflow.Summary.Audio.encoded_audio_string)
+}
+
+// optional string content_type = 5;
+inline void Summary_Audio::clear_content_type() {
+  content_type_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& Summary_Audio::content_type() const {
+  // @@protoc_insertion_point(field_get:tensorflow.Summary.Audio.content_type)
+  return content_type_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void Summary_Audio::set_content_type(const ::std::string& value) {
+  
+  content_type_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:tensorflow.Summary.Audio.content_type)
+}
+inline void Summary_Audio::set_content_type(const char* value) {
+  
+  content_type_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:tensorflow.Summary.Audio.content_type)
+}
+inline void Summary_Audio::set_content_type(const char* value, size_t size) {
+  
+  content_type_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:tensorflow.Summary.Audio.content_type)
+}
+inline ::std::string* Summary_Audio::mutable_content_type() {
+  
+  // @@protoc_insertion_point(field_mutable:tensorflow.Summary.Audio.content_type)
+  return content_type_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* Summary_Audio::release_content_type() {
+  
+  return content_type_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void Summary_Audio::set_allocated_content_type(::std::string* content_type) {
+  if (content_type != NULL) {
+    
+  } else {
+    
+  }
+  content_type_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), content_type);
+  // @@protoc_insertion_point(field_set_allocated:tensorflow.Summary.Audio.content_type)
+}
+
+// -------------------------------------------------------------------
+
 // Summary_Value
 
 // optional string tag = 1;
@@ -993,6 +1255,53 @@ inline void Summary_Value::set_allocated_histo(::tensorflow::HistogramProto* his
   // @@protoc_insertion_point(field_set_allocated:tensorflow.Summary.Value.histo)
 }
 
+// optional .tensorflow.Summary.Audio audio = 6;
+inline bool Summary_Value::has_audio() const {
+  return value_case() == kAudio;
+}
+inline void Summary_Value::set_has_audio() {
+  _oneof_case_[0] = kAudio;
+}
+inline void Summary_Value::clear_audio() {
+  if (has_audio()) {
+    delete value_.audio_;
+    clear_has_value();
+  }
+}
+inline  const ::tensorflow::Summary_Audio& Summary_Value::audio() const {
+  // @@protoc_insertion_point(field_get:tensorflow.Summary.Value.audio)
+  return has_audio()
+      ? *value_.audio_
+      : ::tensorflow::Summary_Audio::default_instance();
+}
+inline ::tensorflow::Summary_Audio* Summary_Value::mutable_audio() {
+  if (!has_audio()) {
+    clear_value();
+    set_has_audio();
+    value_.audio_ = new ::tensorflow::Summary_Audio;
+  }
+  // @@protoc_insertion_point(field_mutable:tensorflow.Summary.Value.audio)
+  return value_.audio_;
+}
+inline ::tensorflow::Summary_Audio* Summary_Value::release_audio() {
+  if (has_audio()) {
+    clear_has_value();
+    ::tensorflow::Summary_Audio* temp = value_.audio_;
+    value_.audio_ = NULL;
+    return temp;
+  } else {
+    return NULL;
+  }
+}
+inline void Summary_Value::set_allocated_audio(::tensorflow::Summary_Audio* audio) {
+  clear_value();
+  if (audio) {
+    set_has_audio();
+    value_.audio_ = audio;
+  }
+  // @@protoc_insertion_point(field_set_allocated:tensorflow.Summary.Value.audio)
+}
+
 inline bool Summary_Value::has_value() const {
   return value_case() != VALUE_NOT_SET;
 }
@@ -1037,6 +1346,8 @@ Summary::value() const {
 }
 
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

@@ -30,6 +30,12 @@ namespace ops {
 // * strides: The stride of the sliding window for each dimension of `value`.
 // * padding: The type of padding algorithm to use.
 // * opts:
+//   .WithAttr("data_format", StringPiece): Defaults to "NHWC".
+//     Specify the data format of the input and output data. With the
+// default format "NHWC", the data is stored in the order of:
+//     [batch, in_height, in_width, in_channels].
+// Alternatively, the format could be "NCHW", the data storage order of:
+//     [batch, in_channels, in_height, in_width].
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -51,6 +57,12 @@ Node* AvgPool(NodeOut value, gtl::ArraySlice<int> ksize, gtl::ArraySlice<int>
 // * strides: The stride of the sliding window for each dimension of the input.
 // * padding: The type of padding algorithm to use.
 // * opts:
+//   .WithAttr("data_format", StringPiece): Defaults to "NHWC".
+//     Specify the data format of the input and output data. With the
+// default format "NHWC", the data is stored in the order of:
+//     [batch, in_height, in_width, in_channels].
+// Alternatively, the format could be "NCHW", the data storage order of:
+//     [batch, in_channels, in_height, in_width].
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -63,6 +75,9 @@ Node* AvgPoolGrad(NodeOut orig_input_shape, NodeOut grad, gtl::ArraySlice<int>
                   const GraphDefBuilder::Options& opts);
 
 // Batch normalization.
+//
+// DEPRECATED at GraphDef version 9:
+// Use tf.nn.batch_normalization().
 //
 // This op is deprecated. Prefer `tf.nn.batch_normalization`.
 //
@@ -96,6 +111,9 @@ Node* BatchNormWithGlobalNormalization(NodeOut t, NodeOut m, NodeOut v, NodeOut
                                        GraphDefBuilder::Options& opts);
 
 // Gradients for batch normalization.
+//
+// DEPRECATED at GraphDef version 9:
+// Use tf.nn.batch_normalization().
 //
 // This op is deprecated. See `tf.nn.batch_normalization`.
 //
@@ -141,6 +159,14 @@ Node* BatchNormWithGlobalNormalizationGrad(NodeOut t, NodeOut m, NodeOut v,
 // * value: Any number of dimensions.
 // * bias: 1-D with size the last dimension of `value`.
 // * opts:
+//   .WithAttr("data_format", StringPiece): Defaults to "NHWC".
+//     Specify the data format of the input and output data. With the
+// default format "NHWC", the bias tensor will be added to the last dimension
+// of the value tensor.
+// Alternatively, the format could be "NCHW", the data storage order of:
+//     [batch, in_channels, in_height, in_width].
+// The tensor will be added to "in_channels", the third-to-the-last
+//     dimension.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -150,6 +176,53 @@ Node* BatchNormWithGlobalNormalizationGrad(NodeOut t, NodeOut m, NodeOut v,
 // Broadcasted sum of `value` and `bias`.
 Node* BiasAdd(NodeOut value, NodeOut bias, const GraphDefBuilder::Options&
               opts);
+
+// The backward operation for "BiasAdd" on the "bias" tensor.
+//
+// It accumulates all the values from out_backprop into the feature dimension.
+// For NHWC data format, the feature dimension is the last. For NCHW data format,
+// the feature dimension is the third-to-last.
+//
+// Arguments:
+// * out_backprop: Any number of dimensions.
+// * opts:
+//   .WithAttr("data_format", StringPiece): Defaults to "NHWC".
+//     Specify the data format of the input and output data. With the
+// default format "NHWC", the bias tensor will be added to the last dimension
+// of the value tensor.
+// Alternatively, the format could be "NCHW", the data storage order of:
+//     [batch, in_channels, in_height, in_width].
+// The tensor will be added to "in_channels", the third-to-the-last
+//     dimension.
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// 1-D with size the feature dimension of `out_backprop`.
+Node* BiasAddGrad(NodeOut out_backprop, const GraphDefBuilder::Options& opts);
+
+// Adds `bias` to `value`.
+//
+// This is a deprecated version of BiasAdd and will be soon removed.
+//
+// This is a special case of `tf.add` where `bias` is restricted to be 1-D.
+// Broadcasting is supported, so `value` may have any number of dimensions.
+//
+// Arguments:
+// * value: Any number of dimensions.
+// * bias: 1-D with size the last dimension of `value`.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// Broadcasted sum of `value` and `bias`.
+Node* BiasAddV1(NodeOut value, NodeOut bias, const GraphDefBuilder::Options&
+                opts);
 
 // Computes a 2-D convolution given 4-D `input` and `filter` tensors.
 //
@@ -166,7 +239,7 @@ Node* BiasAdd(NodeOut value, NodeOut bias, const GraphDefBuilder::Options&
 // 3. For each patch, right-multiplies the filter matrix and the image patch
 //    vector.
 //
-// In detail,
+// In detail, with the default NHWC format,
 //
 //     output[b, i, j, k] =
 //         sum_{di, dj, q} input[b, strides[1] * i + di, strides[2] * j + dj, q] *
@@ -177,10 +250,16 @@ Node* BiasAdd(NodeOut value, NodeOut bias, const GraphDefBuilder::Options&
 //
 // Arguments:
 // * strides: 1-D of length 4.  The stride of the sliding window for each dimension
-// of `input`.
+// of `input`. Must be in the same order as the dimension specified with format.
 // * padding: The type of padding algorithm to use.
 // * opts:
 //   .WithAttr("use_cudnn_on_gpu", bool): Defaults to true.
+//   .WithAttr("data_format", StringPiece): Defaults to "NHWC".
+//     Specify the data format of the input and output data. With the
+// default format "NHWC", the data is stored in the order of:
+//     [batch, in_height, in_width, in_channels].
+// Alternatively, the format could be "NCHW", the data storage order of:
+//     [batch, in_channels, in_height, in_width].
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -200,10 +279,17 @@ Node* Conv2D(NodeOut input, NodeOut filter, gtl::ArraySlice<int> strides,
 // * out_backprop: 4-D with shape `[batch, out_height, out_width, out_channels]`.
 // Gradients w.r.t. the output of the convolution.
 // * strides: The stride of the sliding window for each dimension of the input
-// of the convolution.
+// of the convolution. Must be in the same order as the dimension specified with
+// format.
 // * padding: The type of padding algorithm to use.
 // * opts:
 //   .WithAttr("use_cudnn_on_gpu", bool): Defaults to true.
+//   .WithAttr("data_format", StringPiece): Defaults to "NHWC".
+//     Specify the data format of the input and output data. With the
+// default format "NHWC", the data is stored in the order of:
+//     [batch, in_height, in_width, in_channels].
+// Alternatively, the format could be "NCHW", the data storage order of:
+//     [batch, in_channels, in_height, in_width].
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -228,10 +314,17 @@ Node* Conv2DBackpropFilter(NodeOut input, NodeOut filter_sizes, NodeOut
 // * out_backprop: 4-D with shape `[batch, out_height, out_width, out_channels]`.
 // Gradients w.r.t. the output of the convolution.
 // * strides: The stride of the sliding window for each dimension of the input
-// of the convolution.
+// of the convolution. Must be in the same order as the dimension specified with
+// format.
 // * padding: The type of padding algorithm to use.
 // * opts:
 //   .WithAttr("use_cudnn_on_gpu", bool): Defaults to true.
+//   .WithAttr("data_format", StringPiece): Defaults to "NHWC".
+//     Specify the data format of the input and output data. With the
+// default format "NHWC", the data is stored in the order of:
+//     [batch, in_height, in_width, in_channels].
+// Alternatively, the format could be "NCHW", the data storage order of:
+//     [batch, in_channels, in_height, in_width].
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -244,6 +337,95 @@ Node* Conv2DBackpropInput(NodeOut input_sizes, NodeOut filter, NodeOut
                           out_backprop, gtl::ArraySlice<int> strides,
                           StringPiece padding, const GraphDefBuilder::Options&
                           opts);
+
+// Computes a 2-D depthwise convolution given 4-D `input` and `filter` tensors.
+//
+// Given an input tensor of shape `[batch, in_height, in_width, in_channels]`
+// and a filter / kernel tensor of shape
+// `[filter_height, filter_width, in_channels, channel_multiplier]`, containing
+// `in_channels` convolutional filters of depth 1, `depthwise_conv2d` applies
+// a different filter to each input channel (expanding from 1 channel to
+// `channel_multiplier` channels for each), then concatenates the results
+// together. Thus, the output has `in_channels * channel_multiplier` channels.
+//
+// for k in 0..in_channels-1
+//   for q in 0..channel_multiplier-1
+//     output[b, i, j, k * channel_multiplier + q] =
+//       sum_{di, dj} input[b, strides[1] * i + di, strides[2] * j + dj, k] *
+//                         filter[di, dj, k, q]
+//
+// Must have `strides[0] = strides[3] = 1`.  For the most common case of the same
+// horizontal and vertices strides, `strides = [1, stride, stride, 1]`.
+//
+// Arguments:
+// * strides: 1-D of length 4.  The stride of the sliding window for each dimension
+// of `input`.
+// * padding: The type of padding algorithm to use.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node.
+Node* DepthwiseConv2dNative(NodeOut input, NodeOut filter, gtl::ArraySlice<int>
+                            strides, StringPiece padding, const
+                            GraphDefBuilder::Options& opts);
+
+// Computes the gradients of depthwise convolution with respect to the filter.
+//
+// Arguments:
+// * input: 4-D with shape `[batch, in_height, in_width, in_channels]`.
+// * filter_sizes: An integer vector representing the tensor shape of `filter`,
+// where `filter` is a 4-D
+// `[filter_height, filter_width, in_channels, depthwise_multiplier]` tensor.
+// * out_backprop: 4-D with shape `[batch, out_height, out_width, out_channels]`.
+// Gradients w.r.t. the output of the convolution.
+// * strides: The stride of the sliding window for each dimension of the input
+// of the convolution.
+// * padding: The type of padding algorithm to use.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// 4-D with shape
+// `[filter_height, filter_width, in_channels, out_channels]`.  Gradient w.r.t.
+// the `filter` input of the convolution.
+Node* DepthwiseConv2dNativeBackpropFilter(NodeOut input, NodeOut filter_sizes,
+                                          NodeOut out_backprop,
+                                          gtl::ArraySlice<int> strides,
+                                          StringPiece padding, const
+                                          GraphDefBuilder::Options& opts);
+
+// Computes the gradients of depthwise convolution with respect to the input.
+//
+// Arguments:
+// * input_sizes: An integer vector representing the shape of `input`,
+// where `input` is a 4-D `[batch, height, width, channels]` tensor.
+// * filter: 4-D with shape
+// `[filter_height, filter_width, in_channels, depthwise_multiplier]`.
+// * out_backprop: 4-D with shape `[batch, out_height, out_width, out_channels]`.
+// Gradients w.r.t. the output of the convolution.
+// * strides: The stride of the sliding window for each dimension of the input
+// of the convolution.
+// * padding: The type of padding algorithm to use.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// 4-D with shape `[batch, in_height, in_width, in_channels]`.  Gradient
+// w.r.t. the input of the convolution.
+Node* DepthwiseConv2dNativeBackpropInput(NodeOut input_sizes, NodeOut filter,
+                                         NodeOut out_backprop,
+                                         gtl::ArraySlice<int> strides,
+                                         StringPiece padding, const
+                                         GraphDefBuilder::Options& opts);
 
 // Computes exponential linear: `exp(features) - 1` if < 0, `features` otherwise.
 //
@@ -336,7 +518,7 @@ Node* L2Loss(NodeOut t, const GraphDefBuilder::Options& opts);
 //
 //     sqr_sum[a, b, c, d] =
 //         sum(input[a, b, c, d - depth_radius : d + depth_radius + 1] ** 2)
-//     output = input / (bias + alpha * sqr_sum ** beta)
+//     output = input / (bias + alpha * sqr_sum) ** beta
 //
 // For details, see [Krizhevsky et al., ImageNet classification with deep
 // convolutional neural networks (NIPS 2012)]
@@ -386,6 +568,24 @@ Node* LRN(NodeOut input, const GraphDefBuilder::Options& opts);
 Node* LRNGrad(NodeOut input_grads, NodeOut input_image, NodeOut output_image,
               const GraphDefBuilder::Options& opts);
 
+// Computes log softmax activations.
+//
+// For each batch `i` and class `j` we have
+//
+//     logsoftmax[i, j] = logits[i, j] - log(sum(exp(logits[i])))
+//
+// Arguments:
+// * logits: 2-D with shape `[batch_size, num_classes]`.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// Same shape as `logits`.
+Node* LogSoftmax(NodeOut logits, const GraphDefBuilder::Options& opts);
+
 // Performs max pooling on the input.
 //
 // Arguments:
@@ -395,6 +595,12 @@ Node* LRNGrad(NodeOut input_grads, NodeOut input_image, NodeOut output_image,
 // input tensor.
 // * padding: The type of padding algorithm to use.
 // * opts:
+//   .WithAttr("data_format", StringPiece): Defaults to "NHWC".
+//     Specify the data format of the input and output data. With the
+// default format "NHWC", the data is stored in the order of:
+//     [batch, in_height, in_width, in_channels].
+// Alternatively, the format could be "NCHW", the data storage order of:
+//     [batch, in_channels, in_height, in_width].
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -417,6 +623,12 @@ Node* MaxPool(NodeOut input, gtl::ArraySlice<int> ksize, gtl::ArraySlice<int>
 // input tensor.
 // * padding: The type of padding algorithm to use.
 // * opts:
+//   .WithAttr("data_format", StringPiece): Defaults to "NHWC".
+//     Specify the data format of the input and output data. With the
+// default format "NHWC", the data is stored in the order of:
+//     [batch, in_height, in_width, in_channels].
+// Alternatively, the format could be "NCHW", the data storage order of:
+//     [batch, in_channels, in_height, in_width].
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -658,6 +870,9 @@ Node* SparseSoftmaxCrossEntropyWithLogits(NodeOut features, NodeOut labels,
                                           opts);
 
 // Finds values and indices of the `k` largest elements for the last dimension.
+//
+// DEPRECATED at GraphDef version 7:
+// Use TopKV2 instead.
 //
 // If the input is a vector (rank-1), finds the `k` largest entries in the vector
 // and outputs their values and indices as vectors.  Thus `values[j]` is the

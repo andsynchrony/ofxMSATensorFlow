@@ -19,6 +19,22 @@ namespace ops {
 // * a Node* (to pass the first output of that node).
 
 
+// Raise a exception to abort the process when called.
+//
+// Returns nothing but an exception.
+//
+// Arguments:
+// * opts:
+//   .WithAttr("error_msg", StringPiece): Defaults to "".
+//     A string which is the message associated with the exception.
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node.
+Node* Abort(const GraphDefBuilder::Options& opts);
+
 // Does nothing. Serves as a control trigger for scheduling. Only useful as a
 //
 // placeholder for control edges.

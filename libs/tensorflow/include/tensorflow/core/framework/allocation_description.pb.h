@@ -131,6 +131,12 @@ class AllocationDescription : public ::google::protobuf::Message {
   bool has_single_reference() const;
   void set_has_single_reference(bool value);
 
+  // optional uint64 ptr = 6;
+  void clear_ptr();
+  static const int kPtrFieldNumber = 6;
+  ::google::protobuf::uint64 ptr() const;
+  void set_ptr(::google::protobuf::uint64 value);
+
   // @@protoc_insertion_point(class_scope:tensorflow.AllocationDescription)
  private:
 
@@ -140,6 +146,7 @@ class AllocationDescription : public ::google::protobuf::Message {
   ::google::protobuf::int64 allocated_bytes_;
   ::google::protobuf::internal::ArenaStringPtr allocator_name_;
   ::google::protobuf::int64 allocation_id_;
+  ::google::protobuf::uint64 ptr_;
   bool has_single_reference_;
   mutable int _cached_size_;
   friend void  protobuf_AddDesc_tensorflow_2fcore_2fframework_2fallocation_5fdescription_2eproto();
@@ -254,6 +261,20 @@ inline void AllocationDescription::set_has_single_reference(bool value) {
   
   has_single_reference_ = value;
   // @@protoc_insertion_point(field_set:tensorflow.AllocationDescription.has_single_reference)
+}
+
+// optional uint64 ptr = 6;
+inline void AllocationDescription::clear_ptr() {
+  ptr_ = GOOGLE_ULONGLONG(0);
+}
+inline ::google::protobuf::uint64 AllocationDescription::ptr() const {
+  // @@protoc_insertion_point(field_get:tensorflow.AllocationDescription.ptr)
+  return ptr_;
+}
+inline void AllocationDescription::set_ptr(::google::protobuf::uint64 value) {
+  
+  ptr_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.AllocationDescription.ptr)
 }
 
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS

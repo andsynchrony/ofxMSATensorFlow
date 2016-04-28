@@ -121,6 +121,74 @@ Node* SerializeManySparse(NodeOut sparse_indices, NodeOut sparse_values,
 Node* SerializeSparse(NodeOut sparse_indices, NodeOut sparse_values, NodeOut
                       sparse_shape, const GraphDefBuilder::Options& opts);
 
+// Adds two `SparseTensor` objects to produce another `SparseTensor`.
+//
+// The input `SparseTensor` objects' indices are assumed ordered in standard
+// lexicographic order.  If this is not the case, before this step run
+// `SparseReorder` to restore index ordering.
+//
+// By default, if two values sum to zero at some index, the output `SparseTensor`
+// would still include that particular location in its index, storing a zero in the
+// corresponding value slot.  To override this, callers can specify `thresh`,
+// indicating that if the sum has a magnitude strictly smaller than `thresh`, its
+// corresponding value and index would then not be included.  In particular,
+// `thresh == 0` (default) means everything is kept and actual thresholding happens
+// only for a positive value.
+//
+// In the following shapes, `nnz` is the count after taking `thresh` into account.
+//
+// Arguments:
+// * a_indices: 2-D.  The `indices` of the first `SparseTensor`, size `[nnz, ndims]` Matrix.
+// * a_values: 1-D.  The `values` of the first `SparseTensor`, size `[nnz]` Vector.
+// * a_shape: 1-D.  The `shape` of the first `SparseTensor`, size `[ndims]` Vector.
+// * b_indices: 2-D.  The `indices` of the second `SparseTensor`, size `[nnz, ndims]` Matrix.
+// * b_values: 1-D.  The `values` of the second `SparseTensor`, size `[nnz]` Vector.
+// * b_shape: 1-D.  The `shape` of the second `SparseTensor`, size `[ndims]` Vector.
+// * thresh: 0-D.  The magnitude threshold that determines if an output value/index
+// pair takes space.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with outputs:
+// * sum_indices
+// * sum_values
+// * sum_shape
+Node* SparseAdd(NodeOut a_indices, NodeOut a_values, NodeOut a_shape, NodeOut
+                b_indices, NodeOut b_values, NodeOut b_shape, NodeOut thresh,
+                const GraphDefBuilder::Options& opts);
+
+// The gradient operator for the SparseAdd op.
+//
+// The SparseAdd op calculates A + B, where A, B, and the sum are all represented
+// as `SparseTensor` objects.  This op takes in the upstream gradient w.r.t.
+// non-empty values of the sum, and outputs the gradients w.r.t. the non-empty
+// values of A and B.
+//
+// Arguments:
+// * backprop_val_grad: 1-D with shape `[nnz(sum)]`.  The gradient with respect to
+// the non-empty values of the sum.
+// * a_indices: 2-D.  The `indices` of the `SparseTensor` A, size `[nnz(A), ndims]`.
+// * b_indices: 2-D.  The `indices` of the `SparseTensor` B, size `[nnz(B), ndims]`.
+// * sum_indices: 2-D.  The `indices` of the sum `SparseTensor`, size
+// `[nnz(sum), ndims]`.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with outputs:
+// * a_val_grad: 1-D with shape `[nnz(A)]`. The gradient with respect to the
+// non-empty values of A.
+// * b_val_grad: 1-D with shape `[nnz(B)]`. The gradient with respect to the
+// non-empty values of B.
+Node* SparseAddGrad(NodeOut backprop_val_grad, NodeOut a_indices, NodeOut
+                    b_indices, NodeOut sum_indices, const
+                    GraphDefBuilder::Options& opts);
+
 // Concatenates a list of `SparseTensor` along the specified dimension.
 //
 // Concatenation is with respect to the dense versions of these sparse tensors.
@@ -183,6 +251,40 @@ Node* SerializeSparse(NodeOut sparse_indices, NodeOut sparse_values, NodeOut
 Node* SparseConcat(gtl::ArraySlice<NodeOut> indices, gtl::ArraySlice<NodeOut>
                    values, gtl::ArraySlice<NodeOut> shapes, int64 concat_dim,
                    const GraphDefBuilder::Options& opts);
+
+// Computes the sum of elements across dimensions of a SparseTensor.
+//
+// This Op takes a SparseTensor and is the sparse counterpart to
+// `tf.reduce_sum()`.  In particular, this Op also returns a dense `Tensor`
+// instead of a sparse one.
+//
+// Reduces `sp_input` along the dimensions given in `reduction_axes`.  Unless
+// `keep_dims` is true, the rank of the tensor is reduced by 1 for each entry in
+// `reduction_axes`. If `keep_dims` is true, the reduced dimensions are retained
+// with length 1.
+//
+// If `reduction_axes` has no entries, all dimensions are reduced, and a tensor
+// with a single element is returned.
+//
+// Arguments:
+// * input_indices: 2-D.  `N x R` matrix with the indices of non-empty values in a
+// SparseTensor, possibly not in canonical ordering.
+// * input_values: 1-D.  `N` non-empty values corresponding to `input_indices`.
+// * input_shape: 1-D.  Shape of the input SparseTensor.
+// * reduction_axes: 1-D.  Length-`K` vector containing the reduction axes.
+// * opts:
+//   .WithAttr("keep_dims", bool): Defaults to false.
+//     If true, retain reduced dimensions with length 1.
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// `R-K`-D.  The reduced Tensor.
+Node* SparseReduceSum(NodeOut input_indices, NodeOut input_values, NodeOut
+                      input_shape, NodeOut reduction_axes, const
+                      GraphDefBuilder::Options& opts);
 
 // Reorders a SparseTensor into the canonical, row-major ordering.
 //
@@ -258,6 +360,26 @@ Node* SparseSplit(NodeOut split_dim, NodeOut indices, NodeOut values, NodeOut
                   shape, int64 num_split, const GraphDefBuilder::Options&
                   opts);
 
+// Adds up a `SparseTensor` and a dense `Tensor`, producing a dense `Tensor`.
+//
+// This Op does not require `a_indices` be sorted in standard lexicographic order.
+//
+// Arguments:
+// * a_indices: 2-D.  The `indices` of the `SparseTensor`, with shape `[nnz, ndims]`.
+// * a_values: 1-D.  The `values` of the `SparseTensor`, with shape `[nnz]`.
+// * a_shape: 1-D.  The `shape` of the `SparseTensor`, with shape `[ndims]`.
+// * b: `ndims`-D Tensor.  With shape `a_shape`.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node.
+Node* SparseTensorDenseAdd(NodeOut a_indices, NodeOut a_values, NodeOut
+                           a_shape, NodeOut b, const GraphDefBuilder::Options&
+                           opts);
+
 // Multiply SparseTensor (of rank 2) "A" by dense matrix "B".
 //
 // No validity checking is performed on the indices of A.  However, the following
@@ -271,9 +393,9 @@ Node* SparseSplit(NodeOut split_dim, NodeOut indices, NodeOut values, NodeOut
 //   order instead of "row major" order).
 //
 // Arguments:
-// * a_indices: 2-D.  The `indices` of the `SparseTensor`, size [nnz x 2] Matrix.
-// * a_values: 1-D.  The `values` of the `SparseTensor`, size [nnz] Vector.
-// * a_shape: 1-D.  The `shape` of the `SparseTensor`, size [2] Vector.
+// * a_indices: 2-D.  The `indices` of the `SparseTensor`, size `[nnz, 2]` Matrix.
+// * a_values: 1-D.  The `values` of the `SparseTensor`, size `[nnz]` Vector.
+// * a_shape: 1-D.  The `shape` of the `SparseTensor`, size `[2]` Vector.
 // * b: 2-D.  A dense Matrix.
 // * opts:
 //   .WithAttr("adjoint_a", bool): Defaults to false.

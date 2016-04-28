@@ -57,14 +57,15 @@ Node* BatchCholesky(NodeOut input, const GraphDefBuilder::Options& opts);
 Node* BatchMatrixDeterminant(NodeOut input, const GraphDefBuilder::Options&
                              opts);
 
-// Calculates the inverse of square invertible matrices.
+// Calculates the inverse of square invertible matrices or their adjoints
+//
+// (conjugate transposes).
 //
 // The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
 // form square matrices. The output is a tensor of the same shape as the input
 // containing the inverse for all input submatrices `[..., :, :]`.
 //
-// The op uses the Cholesky decomposition if the matrices are symmetric positive
-// definite and LU decomposition with partial pivoting otherwise.
+// The op uses LU decomposition with partial pivoting to compute the inverses.
 //
 // If a matrix is not invertible there is no guarantee what the op does. It
 // may detect the condition and raise an exception or it may simply return a
@@ -73,6 +74,7 @@ Node* BatchMatrixDeterminant(NodeOut input, const GraphDefBuilder::Options&
 // Arguments:
 // * input: Shape is `[..., M, M]`.
 // * opts:
+//   .WithAttr("adjoint", bool): Defaults to false.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -86,13 +88,18 @@ Node* BatchMatrixInverse(NodeOut input, const GraphDefBuilder::Options& opts);
 //
 // Matrix is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
 // form square matrices. Rhs is a tensor of shape
-// `[..., M, K]`. The output is a tensor shape `[..., M, K]` where each output
-// matrix satisfies matrix[..., :, :] * output[..., :, :] = rhs[..., :, :].
+// `[..., M, K]`. The output is a tensor shape `[..., M, K]`.  If `adjoint` is `False` then each output
+// matrix satisfies `matrix[..., :, :] * output[..., :, :] = rhs[..., :, :]`.
+// If `adjoint` is `True` then each output
+// matrix satisfies `adjoint(matrix[..., :, :]) * output[..., :, :] = rhs[..., :, :]`.
 //
 // Arguments:
 // * matrix: Shape is `[..., M, M]`.
 // * rhs: Shape is `[..., M, K]`.
 // * opts:
+//   .WithAttr("adjoint", bool): Defaults to false.
+//     Boolean indicating whether to solve with `matrix` or its (block-wise)
+// adjoint.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -159,22 +166,28 @@ Node* BatchMatrixSolveLs(NodeOut matrix, NodeOut rhs, NodeOut l2_regularizer,
 //
 // `matrix` is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions form
 // square matrices. If `lower` is `True` then the strictly upper triangular part
-// of each inner-most matrix is ignored. If `lower` is False then the strictly
-// lower triangular part of each inner-most matrix is ignored. `rhs` is a tensor
-// of shape [..., M, K]`.
+// of each inner-most matrix is assumed to be zero and not accessed.
+// If `lower` is False then the strictly lower triangular part of each inner-most
+// matrix is assumed to be zero and not accessed.
+// `rhs` is a tensor of shape [..., M, K]`.
 //
-// The output is a tensor of shape `[..., M, K]`. If `lower` is `True` then the
-// output satisfies
-// \\(\sum_{k=0}^{i}\\) matrix[..., i, k] * output[..., k, j] = rhs[..., i, j].
-// If `lower` is false then the strictly then the output satisfies
-// \\(sum_{k=i}^{K-1}\\) matrix[..., i, k] * output[..., k, j] = rhs[..., i, j].
+// The output is a tensor of shape `[..., M, K]`. If `adjoint` is `True` then the
+// innermost matrices in output` satisfy matrix equations
+// `matrix[..., :, :] * output[..., :, :] = rhs[..., :, :]`.
+// If `adjoint` is `False` then the strictly then the  innermost matrices in
+// `output` satisfy matrix equations
+// `adjoint(matrix[..., i, k]) * output[..., k, j] = rhs[..., i, j]`.
 //
 // Arguments:
 // * matrix: Shape is `[..., M, M]`.
 // * rhs: Shape is `[..., M, K]`.
 // * opts:
 //   .WithAttr("lower", bool): Defaults to true.
-//     Boolean indicating whether matrix is lower or upper triangular.
+//     Boolean indicating whether the innermost matrices in `matrix` are
+// lower or upper triangular.
+//   .WithAttr("adjoint", bool): Defaults to false.
+//     Boolean indicating whether to solve with `matrix` or its (block-wise)
+// adjoint.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -227,6 +240,24 @@ Node* BatchSelfAdjointEig(NodeOut input, const GraphDefBuilder::Options& opts);
 // Shape is `[M, M]`.
 Node* Cholesky(NodeOut input, const GraphDefBuilder::Options& opts);
 
+// Calculates the reverse mode backpropagated gradient of the Cholesky algorithm.
+//
+// For an explanation see "Differentiation of the Cholesky algorithm" by Iain Murray http://arxiv.org/abs/1602.07527.
+//
+// Arguments:
+// * l: Output of Cholesky algorithm l = chol(A). Shape is `[M, M]`. Algorithm depends only on lower triangular part of this matrix.
+// * grad: df/dl where f is some scalar function. Shape is `[M, M]'. Algorithm depends only on lower triangular part of this matrix.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// Symmetrized version of df/dA . Shape is `[M, M]'
+Node* CholeskyGrad(NodeOut l, NodeOut grad, const GraphDefBuilder::Options&
+                   opts);
+
 // Calculates the determinant of a square matrix.
 //
 // Arguments:
@@ -241,10 +272,11 @@ Node* Cholesky(NodeOut input, const GraphDefBuilder::Options& opts);
 // A scalar, equal to the determinant of the input.
 Node* MatrixDeterminant(NodeOut input, const GraphDefBuilder::Options& opts);
 
-// Calculates the inverse of a square invertible matrix.
+// Calculates the inverse of a square invertible matrix or its adjoint (conjugate
 //
-// The op uses the Cholesky decomposition if the matrix is symmetric positive
-// definite and LU decomposition with partial pivoting otherwise.
+// transpose).
+//
+// The op uses LU decomposition with partial pivoting to compute the inverse.
 //
 // If the matrix is not invertible there is no guarantee what the op does. It
 // may detect the condition and raise an exception or it may simply return a
@@ -253,13 +285,16 @@ Node* MatrixDeterminant(NodeOut input, const GraphDefBuilder::Options& opts);
 // Arguments:
 // * input: Shape is `[M, M]`.
 // * opts:
+//   .WithAttr("adjoint", bool): Defaults to false.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
 //     Add control dependencies on the specified Node(s).
 //
 // Returns a pointer to the created Node, with output:
-// Shape is `[M, M]` containing the matrix inverse of the input.
+// Shape is `[M, M]`. If `adjoint` is `False` then `output` contains the
+// matrix inverse of `input`. If `adjoint` is `True` then `output` contains the
+// matrix inverse of the adjoint of `input`.
 Node* MatrixInverse(NodeOut input, const GraphDefBuilder::Options& opts);
 
 // Solves a system of linear equations. Checks for invertibility.
@@ -268,14 +303,17 @@ Node* MatrixInverse(NodeOut input, const GraphDefBuilder::Options& opts);
 // * matrix: Shape is `[M, M]`.
 // * rhs: Shape is `[M, K]`.
 // * opts:
+//   .WithAttr("adjoint", bool): Defaults to false.
+//     Boolean indicating whether to solve with `matrix` or its adjoint.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
 //     Add control dependencies on the specified Node(s).
 //
 // Returns a pointer to the created Node, with output:
-// Shape is `[M, K]` containing the tensor that solves
-// matrix * output = rhs.
+// Shape is `[M, K]`. If `adjoint` is `False` then `output` that solves
+// `matrix` * `output` = `rhs`. If `adjoint` is `True` then `output` that solves
+// `adjoint(matrix)` * `output` = `rhs`.
 Node* MatrixSolve(NodeOut matrix, NodeOut rhs, const GraphDefBuilder::Options&
                   opts);
 
@@ -329,21 +367,26 @@ Node* MatrixSolveLs(NodeOut matrix, NodeOut rhs, NodeOut l2_regularizer, const
 // backsubstitution.
 //
 // `matrix` is a matrix of shape `[M, M]`. If `lower` is `True` then the strictly
-// upper triangular part of `matrix` is ignored. If `lower` is False then the
-// strictly lower triangular part of `matrix` is ignored. `rhs` is a matrix of
-// shape [M, K]`.
+// upper triangular part of `matrix` is assumed to be zero and not accessed.
+// If `lower` is False then the strictly lower triangular part of `matrix` is
+// assumed to be zero and not accessed.
+// `rhs` is a matrix of shape [M, K]`.
 //
-// The output is a matrix of shape `[M, K]`. If `lower` is `True` then the output
-// satisfies \\(\sum_{k=0}^{i}\\) matrix[i, k] * output[k, j] = rhs[i, j].
-// If `lower` is false then output satisfies
-// \\(\sum_{k=i}^{K-1}\\) matrix[i, k] * output[k, j] = rhs[i, j].
+// The output is a matrix of shape `[M, K]`. If `adjoint` is `False` the output
+// satisfies the matrix equation `matrix` * `output` = `rhs`.
+// If `adjoint` is `False` then `output` satisfies the matrix equation
+// `matrix` * `output` = `rhs`.
+// If `adjoint` is `True` then `output` satisfies the matrix equation
+// `adjoint(matrix)` * `output` = `rhs`.
 //
 // Arguments:
 // * matrix: Shape is `[M, M]`.
 // * rhs: Shape is `[M, K]`.
 // * opts:
 //   .WithAttr("lower", bool): Defaults to true.
-//     Boolean indicating whether matrix is lower or upper triangular.
+//     Boolean indicating whether `matrix` is lower or upper triangular
+//   .WithAttr("adjoint", bool): Defaults to false.
+//     Boolean indicating whether to solve with `matrix` or its adjoint.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):

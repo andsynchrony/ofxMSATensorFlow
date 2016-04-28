@@ -41,6 +41,7 @@ void protobuf_ShutdownFile_tensorflow_2fcore_2fframework_2fop_5fdef_2eproto();
 class OpDef;
 class OpDef_ArgDef;
 class OpDef_AttrDef;
+class OpDeprecation;
 class OpList;
 
 // ===================================================================
@@ -437,6 +438,15 @@ class OpDef : public ::google::protobuf::Message {
   const ::google::protobuf::RepeatedPtrField< ::tensorflow::OpDef_AttrDef >&
       attr() const;
 
+  // optional .tensorflow.OpDeprecation deprecation = 8;
+  bool has_deprecation() const;
+  void clear_deprecation();
+  static const int kDeprecationFieldNumber = 8;
+  const ::tensorflow::OpDeprecation& deprecation() const;
+  ::tensorflow::OpDeprecation* mutable_deprecation();
+  ::tensorflow::OpDeprecation* release_deprecation();
+  void set_allocated_deprecation(::tensorflow::OpDeprecation* deprecation);
+
   // optional string summary = 5;
   void clear_summary();
   static const int kSummaryFieldNumber = 5;
@@ -492,6 +502,7 @@ class OpDef : public ::google::protobuf::Message {
   ::google::protobuf::RepeatedPtrField< ::tensorflow::OpDef_ArgDef > input_arg_;
   ::google::protobuf::RepeatedPtrField< ::tensorflow::OpDef_ArgDef > output_arg_;
   ::google::protobuf::RepeatedPtrField< ::tensorflow::OpDef_AttrDef > attr_;
+  ::tensorflow::OpDeprecation* deprecation_;
   ::google::protobuf::internal::ArenaStringPtr summary_;
   ::google::protobuf::internal::ArenaStringPtr description_;
   bool is_commutative_;
@@ -505,6 +516,96 @@ class OpDef : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static OpDef* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class OpDeprecation : public ::google::protobuf::Message {
+ public:
+  OpDeprecation();
+  virtual ~OpDeprecation();
+
+  OpDeprecation(const OpDeprecation& from);
+
+  inline OpDeprecation& operator=(const OpDeprecation& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const OpDeprecation& default_instance();
+
+  void Swap(OpDeprecation* other);
+
+  // implements Message ----------------------------------------------
+
+  inline OpDeprecation* New() const { return New(NULL); }
+
+  OpDeprecation* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const OpDeprecation& from);
+  void MergeFrom(const OpDeprecation& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(OpDeprecation* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional int32 version = 1;
+  void clear_version();
+  static const int kVersionFieldNumber = 1;
+  ::google::protobuf::int32 version() const;
+  void set_version(::google::protobuf::int32 value);
+
+  // optional string explanation = 2;
+  void clear_explanation();
+  static const int kExplanationFieldNumber = 2;
+  const ::std::string& explanation() const;
+  void set_explanation(const ::std::string& value);
+  void set_explanation(const char* value);
+  void set_explanation(const char* value, size_t size);
+  ::std::string* mutable_explanation();
+  ::std::string* release_explanation();
+  void set_allocated_explanation(::std::string* explanation);
+
+  // @@protoc_insertion_point(class_scope:tensorflow.OpDeprecation)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool _is_default_instance_;
+  ::google::protobuf::internal::ArenaStringPtr explanation_;
+  ::google::protobuf::int32 version_;
+  mutable int _cached_size_;
+  friend void  protobuf_AddDesc_tensorflow_2fcore_2fframework_2fop_5fdef_2eproto();
+  friend void protobuf_AssignDesc_tensorflow_2fcore_2fframework_2fop_5fdef_2eproto();
+  friend void protobuf_ShutdownFile_tensorflow_2fcore_2fframework_2fop_5fdef_2eproto();
+
+  void InitAsDefaultInstance();
+  static OpDeprecation* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -1213,6 +1314,43 @@ OpDef::attr() const {
   return attr_;
 }
 
+// optional .tensorflow.OpDeprecation deprecation = 8;
+inline bool OpDef::has_deprecation() const {
+  return !_is_default_instance_ && deprecation_ != NULL;
+}
+inline void OpDef::clear_deprecation() {
+  if (GetArenaNoVirtual() == NULL && deprecation_ != NULL) delete deprecation_;
+  deprecation_ = NULL;
+}
+inline const ::tensorflow::OpDeprecation& OpDef::deprecation() const {
+  // @@protoc_insertion_point(field_get:tensorflow.OpDef.deprecation)
+  return deprecation_ != NULL ? *deprecation_ : *default_instance_->deprecation_;
+}
+inline ::tensorflow::OpDeprecation* OpDef::mutable_deprecation() {
+  
+  if (deprecation_ == NULL) {
+    deprecation_ = new ::tensorflow::OpDeprecation;
+  }
+  // @@protoc_insertion_point(field_mutable:tensorflow.OpDef.deprecation)
+  return deprecation_;
+}
+inline ::tensorflow::OpDeprecation* OpDef::release_deprecation() {
+  
+  ::tensorflow::OpDeprecation* temp = deprecation_;
+  deprecation_ = NULL;
+  return temp;
+}
+inline void OpDef::set_allocated_deprecation(::tensorflow::OpDeprecation* deprecation) {
+  delete deprecation_;
+  deprecation_ = deprecation;
+  if (deprecation) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:tensorflow.OpDef.deprecation)
+}
+
 // optional string summary = 5;
 inline void OpDef::clear_summary() {
   summary_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -1357,6 +1495,67 @@ inline void OpDef::set_allows_uninitialized_input(bool value) {
 
 // -------------------------------------------------------------------
 
+// OpDeprecation
+
+// optional int32 version = 1;
+inline void OpDeprecation::clear_version() {
+  version_ = 0;
+}
+inline ::google::protobuf::int32 OpDeprecation::version() const {
+  // @@protoc_insertion_point(field_get:tensorflow.OpDeprecation.version)
+  return version_;
+}
+inline void OpDeprecation::set_version(::google::protobuf::int32 value) {
+  
+  version_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.OpDeprecation.version)
+}
+
+// optional string explanation = 2;
+inline void OpDeprecation::clear_explanation() {
+  explanation_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& OpDeprecation::explanation() const {
+  // @@protoc_insertion_point(field_get:tensorflow.OpDeprecation.explanation)
+  return explanation_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void OpDeprecation::set_explanation(const ::std::string& value) {
+  
+  explanation_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:tensorflow.OpDeprecation.explanation)
+}
+inline void OpDeprecation::set_explanation(const char* value) {
+  
+  explanation_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:tensorflow.OpDeprecation.explanation)
+}
+inline void OpDeprecation::set_explanation(const char* value, size_t size) {
+  
+  explanation_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:tensorflow.OpDeprecation.explanation)
+}
+inline ::std::string* OpDeprecation::mutable_explanation() {
+  
+  // @@protoc_insertion_point(field_mutable:tensorflow.OpDeprecation.explanation)
+  return explanation_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* OpDeprecation::release_explanation() {
+  
+  return explanation_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void OpDeprecation::set_allocated_explanation(::std::string* explanation) {
+  if (explanation != NULL) {
+    
+  } else {
+    
+  }
+  explanation_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), explanation);
+  // @@protoc_insertion_point(field_set_allocated:tensorflow.OpDeprecation.explanation)
+}
+
+// -------------------------------------------------------------------
+
 // OpList
 
 // repeated .tensorflow.OpDef op = 1;
@@ -1390,6 +1589,8 @@ OpList::op() const {
 }
 
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

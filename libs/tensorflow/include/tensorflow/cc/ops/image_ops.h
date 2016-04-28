@@ -21,6 +21,9 @@ namespace ops {
 
 // Deprecated. Disallowed in GraphDef version >= 2.
 //
+// DEPRECATED at GraphDef version 2:
+// Use AdjustContrastv2 instead.
+//
 // Arguments:
 // * opts:
 //   .WithName(StringPiece): Set the Node's name
@@ -239,6 +242,34 @@ Node* EncodeJpeg(NodeOut image, const GraphDefBuilder::Options& opts);
 // 0-D. PNG-encoded image.
 Node* EncodePng(NodeOut image, const GraphDefBuilder::Options& opts);
 
+// Extracts a glimpse from the input tensor.
+//
+// Returns a set of windows called glimpses extracted at location
+// `offsets` from the input tensor. If the windows only partially
+// overlaps the inputs, the non overlapping areas will be filled with
+// random noise.
+//
+// The result is a 4-D tensor of shape `[batch_size, glimpse_height,
+// glimpse_width, channels]`. The channels and batch dimensions are the
+// same as that of the input tensor. The height and width of the output
+// windows are specified in the `size` parameter.
+//
+// The argument `normalized` and `centered` controls how the windows are
+//
+// Arguments:
+// * opts:
+//   .WithAttr("centered", bool): Defaults to true.
+//   .WithAttr("normalized", bool): Defaults to true.
+//   .WithAttr("uniform_noise", bool): Defaults to true.
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node.
+Node* ExtractGlimpse(NodeOut input, NodeOut size, NodeOut offsets, const
+                     GraphDefBuilder::Options& opts);
+
 // Convert one or more images from HSV to RGB.
 //
 // Outputs a tensor of the same shape as the `images` tensor, containing the RGB
@@ -282,6 +313,9 @@ Node* HSVToRGB(NodeOut images, const GraphDefBuilder::Options& opts);
 Node* RGBToHSV(NodeOut images, const GraphDefBuilder::Options& opts);
 
 // Randomly crop `image`.
+//
+// DEPRECATED at GraphDef version 8:
+// Random crop is now pure Python.
 //
 // `size` is a 1-D int64 tensor with 2 elements representing the crop height and
 // width.  The values must be non negative.

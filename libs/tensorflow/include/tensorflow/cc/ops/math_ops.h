@@ -139,6 +139,108 @@ Node* ArgMax(NodeOut input, NodeOut dimension, const GraphDefBuilder::Options&
 Node* ArgMin(NodeOut input, NodeOut dimension, const GraphDefBuilder::Options&
              opts);
 
+// Compute the 1-dimensional discrete Fourier Transform over the inner-most
+//
+// dimension of `in`.
+//
+// Arguments:
+// * in: A complex64 tensor.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// A complex64 tensor of the same shape as `in`. The inner-most dimension of
+// `in` is replaced with its 1D Fourier Transform.
+Node* BatchFFT(NodeOut in, const GraphDefBuilder::Options& opts);
+
+// Compute the 2-dimensional discrete Fourier Transform over the inner-most
+//
+// 2 dimensions of `in`.
+//
+// Arguments:
+// * in: A complex64 tensor.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// A complex64 tensor of the same shape as `in`. The inner-most 2 dimensions
+// of `in` are replaced with their 2D Fourier Transform.
+Node* BatchFFT2D(NodeOut in, const GraphDefBuilder::Options& opts);
+
+// Compute the 3-dimensional discrete Fourier Transform over the inner-most 3
+//
+// dimensions of `in`.
+//
+// Arguments:
+// * in: A complex64 tensor.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// A complex64 tensor of the same shape as `in`. The inner-most 3 dimensions
+// of `in` are replaced with their 3D Fourier Transform.
+Node* BatchFFT3D(NodeOut in, const GraphDefBuilder::Options& opts);
+
+// Compute the inverse 1-dimensional discrete Fourier Transform over the inner-most
+//
+// dimension of `in`.
+//
+// Arguments:
+// * in: A complex64 tensor.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// A complex64 tensor of the same shape as `in`. The inner-most dimension of
+// `in` is replaced with its inverse 1D Fourier Transform.
+Node* BatchIFFT(NodeOut in, const GraphDefBuilder::Options& opts);
+
+// Compute the inverse 2-dimensional discrete Fourier Transform over the inner-most
+//
+// 2 dimensions of `in`.
+//
+// Arguments:
+// * in: A complex64 tensor.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// A complex64 tensor of the same shape as `in`. The inner-most 2 dimensions
+// of `in` are replaced with their inverse 2D Fourier Transform.
+Node* BatchIFFT2D(NodeOut in, const GraphDefBuilder::Options& opts);
+
+// Compute the inverse 3-dimensional discrete Fourier Transform over the inner-most
+//
+// 3 dimensions of `in`.
+//
+// Arguments:
+// * in: A complex64 tensor.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// A complex64 tensor of the same shape as `in`. The inner-most 3 dimensions
+// of `in` are replaced with their inverse 3D Fourier Transform.
+Node* BatchIFFT3D(NodeOut in, const GraphDefBuilder::Options& opts);
+
 // Multiplies slices of two tensors in batches.
 //
 // Multiplies all slices of `Tensor` `x` and `y` (each slice can be
@@ -384,6 +486,20 @@ Node* Erfc(NodeOut x, const GraphDefBuilder::Options& opts);
 // Returns a pointer to the created Node.
 Node* Exp(NodeOut x, const GraphDefBuilder::Options& opts);
 
+// Compute the 1-dimensional discrete Fourier Transform.
+//
+// Arguments:
+// * in: A complex64 vector.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// The 1D Fourier Transform of `in`.
+Node* FFT(NodeOut in, const GraphDefBuilder::Options& opts);
+
 // Compute the 2-dimensional discrete Fourier Transform.
 //
 // Arguments:
@@ -397,6 +513,20 @@ Node* Exp(NodeOut x, const GraphDefBuilder::Options& opts);
 // Returns a pointer to the created Node, with output:
 // The 2D Fourier Transform of `in`.
 Node* FFT2D(NodeOut in, const GraphDefBuilder::Options& opts);
+
+// Compute the 3-dimensional discrete Fourier Transform.
+//
+// Arguments:
+// * in: A complex64 3-D tensor.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// The 3D Fourier Transform of `in`.
+Node* FFT3D(NodeOut in, const GraphDefBuilder::Options& opts);
 
 // Returns element-wise largest integer not greater than x.
 //
@@ -434,6 +564,20 @@ Node* Greater(NodeOut x, NodeOut y, const GraphDefBuilder::Options& opts);
 // Returns a pointer to the created Node.
 Node* GreaterEqual(NodeOut x, NodeOut y, const GraphDefBuilder::Options& opts);
 
+// Compute the inverse 1-dimensional discrete Fourier Transform.
+//
+// Arguments:
+// * in: A complex64 vector.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// The inverse 1D Fourier Transform of `in`.
+Node* IFFT(NodeOut in, const GraphDefBuilder::Options& opts);
+
 // Compute the inverse 2-dimensional discrete Fourier Transform.
 //
 // Arguments:
@@ -447,6 +591,72 @@ Node* GreaterEqual(NodeOut x, NodeOut y, const GraphDefBuilder::Options& opts);
 // Returns a pointer to the created Node, with output:
 // The inverse 2D Fourier Transform of `in`.
 Node* IFFT2D(NodeOut in, const GraphDefBuilder::Options& opts);
+
+// Compute the inverse 3-dimensional discrete Fourier Transform.
+//
+// Arguments:
+// * in: A complex64 3-D tensor.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// The inverse 3D Fourier Transform of `in`.
+Node* IFFT3D(NodeOut in, const GraphDefBuilder::Options& opts);
+
+// Compute the lower regularized incomplete Gamma function `Q(a, x)`.
+//
+// The lower regularized incomplete Gamma function is defined as:
+//
+// ```
+// P(a, x) = gamma(a, x) / Gamma(x) = 1 - Q(a, x)
+// ```
+// where
+// ```
+// gamma(a, x) = int_{0}^{x} t^{a-1} exp(-t) dt
+// ```
+// is the lower incomplete Gamma function.
+//
+// Note, above `Q(a, x)` (`Igammac`) is the upper regularized complete
+// Gamma function.
+//
+// Arguments:
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node.
+Node* Igamma(NodeOut a, NodeOut x, const GraphDefBuilder::Options& opts);
+
+// Compute the upper regularized incomplete Gamma function `Q(a, x)`.
+//
+// The upper regularized incomplete Gamma function is defined as:
+//
+// ```
+// Q(a, x) = Gamma(a, x) / Gamma(x) = 1 - P(a, x)
+// ```
+// where
+// ```
+// Gamma(a, x) = int_{x}^{\infty} t^{a-1} exp(-t) dt
+// ```
+// is the upper incomplete Gama function.
+//
+// Note, above `P(a, x)` (`Igamma`) is the lower regularized complete
+// Gamma function.
+//
+// Arguments:
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node.
+Node* Igammac(NodeOut a, NodeOut x, const GraphDefBuilder::Options& opts);
 
 // Returns the imaginary part of a complex number.
 //
@@ -1129,7 +1339,9 @@ Node* Sigmoid(NodeOut x, const GraphDefBuilder::Options& opts);
 
 // Returns an element-wise indication of the sign of a number.
 //
-// y = sign(x) = -1 if x < 0; 0 if x == 0; 1 if x > 0.
+// `y = sign(x) = -1` if `x < 0`; 0 if `x == 0`; 1 if `x > 0`.
+//
+// For complex numbers, `y = sign(x) = x / |x|` if `x != 0`, otherwise `y = 0`.
 //
 // Arguments:
 // * opts:

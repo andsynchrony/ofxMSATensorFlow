@@ -19,6 +19,36 @@ namespace ops {
 // * a Node* (to pass the first output of that node).
 
 
+// Update '*var' according to the adadelta scheme.
+//
+// accum = rho() * accum + (1 - rho()) * grad.square();
+// update = (update_accum + epsilon).sqrt() * (accum + epsilon()).rsqrt() * grad;
+// update_accum = rho() * update_accum + (1 - rho()) * update.square();
+// var -= update;
+//
+// Arguments:
+// * var: Should be from a Variable().
+// * accum: Should be from a Variable().
+// * accum_update: Should be from a Variable().
+// * lr: Scaling factor. Must be a scalar.
+// * rho: Decay factor. Must be a scalar.
+// * epsilon: Constant factor. Must be a scalar.
+// * grad: The gradient.
+// * opts:
+//   .WithAttr("use_locking", bool): Defaults to false.
+//     If True, updating of the var, accum and update_accum tensors will be protected by
+// a lock; otherwise the behavior is undefined, but may exhibit less contention.
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// Same as "var".
+Node* ApplyAdadelta(NodeOut var, NodeOut accum, NodeOut accum_update, NodeOut
+                    lr, NodeOut rho, NodeOut epsilon, NodeOut grad, const
+                    GraphDefBuilder::Options& opts);
+
 // Update '*var' according to the adagrad scheme.
 //
 // accum += grad * grad
@@ -31,8 +61,9 @@ namespace ops {
 // * grad: The gradient.
 // * opts:
 //   .WithAttr("use_locking", bool): Defaults to false.
-//     If True, updating of the var and accum tensors will be protected by
-// a lock; otherwise the behavior is undefined, but may exhibit less contention.
+//     If `True`, updating of the var and accum tensors will be protected
+// by a lock; otherwise the behavior is undefined, but may exhibit less
+// contention.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -63,8 +94,9 @@ Node* ApplyAdagrad(NodeOut var, NodeOut accum, NodeOut lr, NodeOut grad, const
 // * grad: The gradient.
 // * opts:
 //   .WithAttr("use_locking", bool): Defaults to false.
-//     If True, updating of the var, m, and v tensors will be protected by
-// a lock; otherwise the behavior is undefined, but may exhibit less contention.
+//     If `True`, updating of the var, m, and v tensors will be protected
+// by a lock; otherwise the behavior is undefined, but may exhibit less
+// contention.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -95,8 +127,9 @@ Node* ApplyAdam(NodeOut var, NodeOut m, NodeOut v, NodeOut beta1_power, NodeOut
 // * lr_power: Scaling factor. Must be a scalar.
 // * opts:
 //   .WithAttr("use_locking", bool): Defaults to false.
-//     If True, updating of the var and accum tensors will be protected by
-// a lock; otherwise the behavior is undefined, but may exhibit less contention.
+//     If `True`, updating of the var and accum tensors will be protected
+// by a lock; otherwise the behavior is undefined, but may exhibit less
+// contention.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -116,7 +149,7 @@ Node* ApplyFtrl(NodeOut var, NodeOut accum, NodeOut linear, NodeOut grad,
 // * delta: The change.
 // * opts:
 //   .WithAttr("use_locking", bool): Defaults to false.
-//     If True, the subtraction will be protected by a lock;
+//     If `True`, the subtraction will be protected by a lock;
 // otherwise the behavior is undefined, but may exhibit less contention.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
@@ -141,8 +174,9 @@ Node* ApplyGradientDescent(NodeOut var, NodeOut alpha, NodeOut delta, const
 // * momentum: Momentum. Must be a scalar.
 // * opts:
 //   .WithAttr("use_locking", bool): Defaults to false.
-//     If True, updating of the var and accum tensors will be protected by
-// a lock; otherwise the behavior is undefined, but may exhibit less contention.
+//     If `True`, updating of the var and accum tensors will be protected
+// by a lock; otherwise the behavior is undefined, but may exhibit less
+// contention.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -172,8 +206,9 @@ Node* ApplyMomentum(NodeOut var, NodeOut accum, NodeOut lr, NodeOut grad,
 // * grad: The gradient.
 // * opts:
 //   .WithAttr("use_locking", bool): Defaults to false.
-//     If True, updating of the var, m, and v tensors will be protected by
-// a lock; otherwise the behavior is undefined, but may exhibit less contention.
+//     If `True`, updating of the var, m, and v tensors will be protected
+// by a lock; otherwise the behavior is undefined, but may exhibit less
+// contention.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -184,6 +219,22 @@ Node* ApplyMomentum(NodeOut var, NodeOut accum, NodeOut lr, NodeOut grad,
 Node* ApplyRMSProp(NodeOut var, NodeOut ms, NodeOut mom, NodeOut lr, NodeOut
                    rho, NodeOut momentum, NodeOut epsilon, NodeOut grad, const
                    GraphDefBuilder::Options& opts);
+
+// var: Should be from a Variable().
+//
+// Arguments:
+// * opts:
+//   .WithAttr("use_locking", bool): Defaults to false.
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node.
+Node* SparseApplyAdadelta(NodeOut var, NodeOut accum, NodeOut accum_update,
+                          NodeOut lr, NodeOut rho, NodeOut epsilon, NodeOut
+                          grad, NodeOut indices, const
+                          GraphDefBuilder::Options& opts);
 
 // Update relevant entries in '*var' and '*accum' according to the adagrad scheme.
 //
@@ -199,8 +250,9 @@ Node* ApplyRMSProp(NodeOut var, NodeOut ms, NodeOut mom, NodeOut lr, NodeOut
 // * indices: A vector of indices into the first dimension of var and accum.
 // * opts:
 //   .WithAttr("use_locking", bool): Defaults to false.
-//     If True, updating of the var and accum tensors will be protected by
-// a lock; otherwise the behavior is undefined, but may exhibit less contention.
+//     If `True`, updating of the var and accum tensors will be protected
+// by a lock; otherwise the behavior is undefined, but may exhibit less
+// contention.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -233,8 +285,9 @@ Node* SparseApplyAdagrad(NodeOut var, NodeOut accum, NodeOut lr, NodeOut grad,
 // * lr_power: Scaling factor. Must be a scalar.
 // * opts:
 //   .WithAttr("use_locking", bool): Defaults to false.
-//     If True, updating of the var and accum tensors will be protected by
-// a lock; otherwise the behavior is undefined, but may exhibit less contention.
+//     If `True`, updating of the var and accum tensors will be protected
+// by a lock; otherwise the behavior is undefined, but may exhibit less
+// contention.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -262,8 +315,9 @@ Node* SparseApplyFtrl(NodeOut var, NodeOut accum, NodeOut linear, NodeOut grad,
 // * momentum: Momentum. Must be a scalar.
 // * opts:
 //   .WithAttr("use_locking", bool): Defaults to false.
-//     If True, updating of the var and accum tensors will be protected by
-// a lock; otherwise the behavior is undefined, but may exhibit less contention.
+//     If `True`, updating of the var and accum tensors will be protected
+// by a lock; otherwise the behavior is undefined, but may exhibit less
+// contention.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
