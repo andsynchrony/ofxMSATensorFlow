@@ -27,6 +27,8 @@ public:
     // folder of images to classify
     ofDirectory image_dir;
     
+    int image_size = 299;
+    
     // top scoring classes
     vector<int> top_label_indices;  // contains top n label indices for input image
     vector<float> top_class_probs;  // contains top n probabilities for current input image
@@ -42,7 +44,7 @@ public:
         // only PNGs work for some reason when Tensorflow is linked in
         ofImage img;
         img.load(image_dir.getPath(file_index));
-        img.resize(299, 299);
+        img.resize(image_size, image_size);
         
         if(img.isAllocated()) classify(img.getPixels());
         
@@ -68,8 +70,8 @@ public:
         // initialize the image classifier, lots of params to setup
         // these settings are specific to the model
         msa::tf::ImageClassifier::Settings settings;
-        settings.image_dims = { 299, 299, 3 };
-        settings.itensor_dims = { 1, 299, 299, 3 };
+        settings.image_dims = { image_size, image_size, 3 };
+        settings.itensor_dims = { 1, image_size, image_size, 3 };
         settings.model_path = "models/tensorflow_inception_graph.pb";
         settings.labels_path = "models/imagenet_comp_graph_label_strings.txt";
         settings.input_layer_name = "Mul";
@@ -86,6 +88,7 @@ public:
         image_dir.listDir("images");
         
         // load first image to classify
+        // switched this off due to crashes
         //loadNextImage();
         
         ofLogNotice() << "Init successfull";
@@ -104,7 +107,7 @@ public:
                         if(ofGetKeyPressed(' '))
                         {
                             ofImage img;
-                            img.setFromPixels(video_grabber->getPixels(), 299, 299, OF_IMAGE_COLOR);
+                            img.setFromPixels(video_grabber->getPixels(), image_size, image_size, OF_IMAGE_COLOR);
                             classify(video_grabber->getPixels());
                         }
                     }
@@ -201,9 +204,9 @@ public:
         
         // only PNGs work for some reason when Tensorflow is linked in
         ofImage img;
-        img.allocate(299, 299, OF_IMAGE_COLOR);
+        img.allocate(image_size, image_size, OF_IMAGE_COLOR);
         img.load(file_path);
-        img.resize(299, 299);
+        img.resize(image_size, image_size);
         if(img.isAllocated()) classify(img.getPixels());
     }
     
