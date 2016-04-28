@@ -76,6 +76,10 @@ https://github.com/memo/ofxMSATensorFlow
 
 https://github.com/memo/ofxMSATensorFlow/releases
 
+Updated library for OSX using TensorFlow v0.8 can be found here:
+https://github.com/andsynchrony/ofxMSATensorFlow/releases
+
+
 ## Install the library (libtensorflow_cc.so)
 Once you've downloaded the library for your platform (mentioned above) copy into the relevant folder under ofxMSATensorFlow/libs/tensorflow/ **linux64** or **osx**.
 
