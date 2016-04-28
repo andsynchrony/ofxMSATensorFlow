@@ -136,3 +136,6 @@ build*
 *.pb
 *.data
 checkpoint
+
+# Images folders
+*images

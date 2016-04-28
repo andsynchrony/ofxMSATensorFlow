@@ -364,7 +364,7 @@
 					../../../addons/ofxMSATensorFlow/libs/tensorflow/include,
 					../../../addons/ofxMSATensorFlow/libs/tensorflow/include/third_party/eigen3,
 					../../../addons/ofxMSATensorFlow/libs/tensorflow/include/external/eigen_archive,
-					"../../../addons/ofxMSATensorFlow/libs/tensorflow/include/external/eigen_archive/eigen-eigen-70505a059011",
+					"../../../addons/ofxMSATensorFlow/libs/tensorflow/include/external/eigen_archive/eigen-eigen-7bfd5612c330",
 				);
 				ICON = "$(ICON_NAME_DEBUG)";
 				ICON_FILE = "$(ICON_FILE_PATH)$(ICON)";
@@ -401,7 +401,7 @@
 					../../../addons/ofxMSATensorFlow/libs/tensorflow/include,
 					../../../addons/ofxMSATensorFlow/libs/tensorflow/include/third_party/eigen3,
 					../../../addons/ofxMSATensorFlow/libs/tensorflow/include/external/eigen_archive,
-					"../../../addons/ofxMSATensorFlow/libs/tensorflow/include/external/eigen_archive/eigen-eigen-70505a059011",
+					"../../../addons/ofxMSATensorFlow/libs/tensorflow/include/external/eigen_archive/eigen-eigen-7bfd5612c330",
 				);
 				ICON = "$(ICON_NAME_RELEASE)";
 				ICON_FILE = "$(ICON_FILE_PATH)$(ICON)";
